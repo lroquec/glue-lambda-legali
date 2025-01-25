@@ -102,12 +102,13 @@ resource "aws_glue_job" "process_logs" {
 
 # S3 Event trigger Lambda
 resource "aws_lambda_function" "trigger_glue" {
-  filename         = "lambda_function.zip"
-  function_name    = "trigger_glue_job_${var.environment}"
-  role            = aws_iam_role.lambda_role.arn
-  handler         = "index.handler"
-  runtime         = "python3.10"
-  timeout         = 30
+  s3_bucket     = aws_s3_bucket.legal_files.id
+  s3_key        = aws_s3_object.lambda_zip.key
+  function_name = "trigger_glue_job_${var.environment}"
+  role          = aws_iam_role.lambda_role.arn
+  handler       = "trigger_glue.handler"
+  runtime       = "python3.10"
+  timeout       = 30
 
   environment {
     variables = {
@@ -143,6 +144,25 @@ resource "aws_iam_role_policy" "lambda_glue" {
       Effect = "Allow"
       Action = ["glue:StartJobRun"]
       Resource = [aws_glue_job.process_logs.arn]
+    }]
+  })
+}
+
+# Lambda CloudWatch logs policy
+resource "aws_iam_role_policy" "lambda_logging" {
+  name = "lambda_logging_${var.environment}"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ]
+      Resource = ["arn:aws:logs:*:*:*"]
     }]
   })
 }

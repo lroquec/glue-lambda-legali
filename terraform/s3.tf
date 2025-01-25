@@ -45,3 +45,58 @@ data "archive_file" "lambda_zip" {
   source_file = "../src/lambda/trigger_glue.py"
   output_path = "lambda_function.zip"
 }
+
+# Upload Lambda zip to S3# Upload Lambda ZIP to S3
+resource "aws_s3_object" "lambda_zip" {
+  bucket = aws_s3_bucket.legal_files.id
+  key    = "lambda/lambda_function.zip"
+  source = "lambda_function.zip"
+  etag   = filemd5("lambda_function.zip")
+}
+
+# S3 bucket encryption
+resource "aws_s3_bucket_server_side_encryption_configuration" "legal_files" {
+  bucket = aws_s3_bucket.legal_files.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+# Block public access
+resource "aws_s3_bucket_public_access_block" "legal_files" {
+  bucket = aws_s3_bucket.legal_files.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# Enforce SSL
+resource "aws_s3_bucket_policy" "legal_files" {
+  bucket = aws_s3_bucket.legal_files.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid = "ForceSSLOnly"
+        Effect = "Deny"
+        Principal = "*"
+        Action = "s3:*"
+        Resource = [
+          aws_s3_bucket.legal_files.arn,
+          "${aws_s3_bucket.legal_files.arn}/*"
+        ]
+        Condition = {
+          Bool = {
+            "aws:SecureTransport": "false"
+          }
+        }
+      }
+    ]
+  })
+}
