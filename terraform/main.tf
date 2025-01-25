@@ -141,8 +141,8 @@ resource "aws_iam_role_policy" "lambda_glue" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
-      Action = ["glue:StartJobRun"]
+      Effect   = "Allow"
+      Action   = ["glue:StartJobRun"]
       Resource = [aws_glue_job.process_logs.arn]
     }]
   })

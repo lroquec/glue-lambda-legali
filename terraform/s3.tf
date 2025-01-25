@@ -1,6 +1,6 @@
 # S3 bucket for uploads
 resource "aws_s3_bucket" "legal_files" {
-  bucket = "legal-requests-${var.environment}"
+  bucket        = "legal-requests-${var.environment}"
   force_destroy = true
 }
 
@@ -13,9 +13,9 @@ resource "aws_s3_bucket_versioning" "legal_files" {
 
 # Bucket folders
 resource "aws_s3_object" "folders" {
-  for_each = toset(["compressed/", "raw/", "parquet/", "athena-results/", "scripts/", "temporary/"])
-  bucket   = aws_s3_bucket.legal_files.id
-  key      = each.key
+  for_each     = toset(["compressed/", "raw/", "parquet/", "athena-results/", "scripts/", "temporary/"])
+  bucket       = aws_s3_bucket.legal_files.id
+  key          = each.key
   content_type = "application/x-directory"
 }
 
@@ -83,17 +83,17 @@ resource "aws_s3_bucket_policy" "legal_files" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid = "ForceSSLOnly"
-        Effect = "Deny"
+        Sid       = "ForceSSLOnly"
+        Effect    = "Deny"
         Principal = "*"
-        Action = "s3:*"
+        Action    = "s3:*"
         Resource = [
           aws_s3_bucket.legal_files.arn,
           "${aws_s3_bucket.legal_files.arn}/*"
         ]
         Condition = {
           Bool = {
-            "aws:SecureTransport": "false"
+            "aws:SecureTransport" : "false"
           }
         }
       }
