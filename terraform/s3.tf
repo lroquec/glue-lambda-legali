@@ -43,15 +43,15 @@ resource "aws_s3_object" "glue_script" {
 data "archive_file" "lambda_zip" {
   type        = "zip"
   source_file = "../src/lambda/trigger_glue.py"
-  output_path = "lambda_function.zip"
+  output_path = "${path.module}/lambda_function.zip"
 }
 
 # Upload Lambda zip to S3# Upload Lambda ZIP to S3
 resource "aws_s3_object" "lambda_zip" {
   bucket = aws_s3_bucket.legal_files.id
   key    = "lambda/lambda_function.zip"
-  source = "lambda_function.zip"
-  etag   = filemd5("lambda_function.zip")
+  source = data.archive_file.lambda_zip.output_path
+  etag   = data.archive_file.lambda_zip.output_base64sha256
 }
 
 # S3 bucket encryption
