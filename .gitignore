@@ -36,3 +36,6 @@ override.tf.json
 .terraformrc
 terraform.rc
 .terraform.lock.hcl
+
+# Ignore zip files
+lambda_function.zip
