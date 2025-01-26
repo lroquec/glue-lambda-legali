@@ -104,3 +104,10 @@ resource "aws_s3_bucket_policy" "legal_files" {
     ]
   })
 }
+
+resource "aws_s3_bucket_versioning" "legal_files" {
+  bucket = aws_s3_bucket.legal_files.id
+  versioning_configuration {
+    status = "Suspended"  # Change to Suspended temporarily
+  }
+}
