@@ -34,6 +34,7 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
     filter_prefix       = "compressed/"
     filter_suffix       = ".tar.gz"
   }
+  depends_on = [aws_lambda_permission.allow_bucket]
 }
 
 # Upload Python scripts to S3
