@@ -193,10 +193,10 @@ resource "aws_lambda_function" "start_crawler" {
   filename         = data.archive_file.crawler_lambda_zip.output_path
   source_code_hash = data.archive_file.crawler_lambda_zip.output_base64sha256
   function_name    = "start_crawler_${var.environment}"
-  role            = aws_iam_role.crawler_lambda_role.arn
-  handler         = "index.handler"
-  runtime         = "python3.10"
-  timeout         = 30
+  role             = aws_iam_role.crawler_lambda_role.arn
+  handler          = "index.handler"
+  runtime          = "python3.10"
+  timeout          = 30
 
   depends_on = [data.archive_file.crawler_lambda_zip]
 }
@@ -247,8 +247,8 @@ resource "aws_iam_role_policy" "crawler_lambda_glue" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
-      Action = ["glue:StartCrawler"]
+      Effect   = "Allow"
+      Action   = ["glue:StartCrawler"]
       Resource = [aws_glue_crawler.connection_logs.arn]
     }]
   })
