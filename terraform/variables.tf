@@ -10,3 +10,8 @@ variable "environment" {
   description = "Environment name (e.g. dev, prod)"
   default     = "prod"
 }
+
+variable "notification_email" {
+  type        = string
+  description = "Email address for crawler completion notifications"
+}
