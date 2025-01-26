@@ -1,7 +1,8 @@
 # S3 bucket for uploads
 resource "aws_s3_bucket" "legal_files" {
-  bucket        = "legal-requests-${var.environment}"
-  force_destroy = true
+  bucket              = "legal-requests-${var.environment}"
+  force_destroy       = true
+  object_lock_enabled = false
 }
 
 resource "aws_s3_bucket_versioning" "legal_files" {
@@ -48,14 +49,6 @@ resource "aws_s3_object" "glue_script" {
   key    = "scripts/process_logs.py"
   source = "../src/glue/process_logs.py"
   etag   = filemd5("../src/glue/process_logs.py")
-}
-
-# Upload Lambda zip to S3# Upload Lambda ZIP to S3
-resource "aws_s3_object" "lambda_zip" {
-  bucket = aws_s3_bucket.legal_files.id
-  key    = "lambda/lambda_function.zip"
-  source = data.archive_file.lambda_zip.output_path
-  etag   = data.archive_file.lambda_zip.output_base64sha256
 }
 
 # S3 bucket encryption
