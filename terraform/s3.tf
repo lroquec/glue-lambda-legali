@@ -7,16 +7,16 @@ resource "aws_s3_bucket" "legal_files" {
 resource "aws_s3_bucket_versioning" "legal_files" {
   bucket = aws_s3_bucket.legal_files.id
   versioning_configuration {
-    status = "Suspended"  # Change to Suspended temporarily
+    status = "Suspended" # Change to Suspended temporarily
   }
 }
 
 # Bucket folders
 resource "aws_s3_object" "folders" {
-  for_each = toset(["compressed/", "raw/", "parquet/", "athena-results/", "scripts/", "temporary/"])
-  bucket   = aws_s3_bucket.legal_files.id
-  key      = each.key
-  content = ""
+  for_each      = toset(["compressed/", "raw/", "parquet/", "athena-results/", "scripts/", "temporary/"])
+  bucket        = aws_s3_bucket.legal_files.id
+  key           = each.key
+  content       = ""
   force_destroy = true
 
   lifecycle {
