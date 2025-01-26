@@ -10,18 +10,6 @@ resource "aws_athena_workgroup" "legal_requests" {
   }
 }
 
-# Athena primary workgroup configuration
-resource "aws_athena_workgroup" "primary" {
-  name = "primary"
-
-  configuration {
-    enforce_workgroup_configuration = true
-    result_configuration {
-      output_location = "s3://${aws_s3_bucket.legal_files.bucket}/athena-results/"
-    }
-  }
-}
-
 # Glue database
 resource "aws_glue_catalog_database" "connection_tracking" {
   name = "connection_tracking_${var.environment}"
