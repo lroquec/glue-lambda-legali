@@ -287,7 +287,7 @@ resource "aws_sns_topic" "crawler_completion" {
 resource "aws_sns_topic_subscription" "email" {
   topic_arn = aws_sns_topic.crawler_completion.arn
   protocol  = "email"
-  endpoint  = var.notification_email # Añade esta variable
+  endpoint  = var.notification_email
 }
 
 resource "aws_cloudwatch_event_rule" "crawler_completion" {
