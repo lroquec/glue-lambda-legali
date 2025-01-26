@@ -102,13 +102,13 @@ resource "aws_glue_job" "process_logs" {
 
 # S3 Event trigger Lambda
 resource "aws_lambda_function" "trigger_glue" {
-  s3_bucket     = aws_s3_bucket.legal_files.id
-  s3_key        = aws_s3_object.lambda_zip.key
-  function_name = "trigger_glue_job_${var.environment}"
-  role          = aws_iam_role.lambda_role.arn
-  handler       = "trigger_glue.handler"
-  runtime       = "python3.10"
-  timeout       = 30
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  function_name    = "trigger_glue_job_${var.environment}"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "trigger_glue.handler"
+  runtime          = "python3.10"
+  timeout          = 30
 
   environment {
     variables = {
