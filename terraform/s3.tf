@@ -44,13 +44,6 @@ resource "aws_s3_object" "glue_script" {
   etag   = filemd5("../src/glue/process_logs.py")
 }
 
-# Lambda zip file creation
-data "archive_file" "lambda_zip" {
-  type        = "zip"
-  source_file = "../src/lambda/trigger_glue.py"
-  output_path = "${path.module}/lambda_function.zip"
-}
-
 # Upload Lambda zip to S3# Upload Lambda ZIP to S3
 resource "aws_s3_object" "lambda_zip" {
   bucket = aws_s3_bucket.legal_files.id
