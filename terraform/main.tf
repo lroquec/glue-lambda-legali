@@ -175,3 +175,81 @@ resource "aws_lambda_permission" "allow_bucket" {
   principal     = "s3.amazonaws.com"
   source_arn    = aws_s3_bucket.legal_files.arn
 }
+
+# Lambda zip file creation
+data "archive_file" "lambda_zip" {
+  type        = "zip"
+  source_file = "../src/lambda/trigger_glue.py"
+  output_path = "${path.module}/lambda_function.zip"
+}
+
+data "archive_file" "crawler_lambda_zip" {
+  type        = "zip"
+  source_file = "../src/lambda/start_crawler.py"
+  output_path = "lambda_crawler.zip"
+}
+
+resource "aws_lambda_function" "start_crawler" {
+  filename         = data.archive_file.crawler_lambda_zip.output_path
+  source_code_hash = data.archive_file.crawler_lambda_zip.output_base64sha256
+  function_name    = "start_crawler_${var.environment}"
+  role            = aws_iam_role.crawler_lambda_role.arn
+  handler         = "index.handler"
+  runtime         = "python3.10"
+  timeout         = 30
+
+  depends_on = [data.archive_file.crawler_lambda_zip]
+}
+
+# EventBridge rule for Glue job completion
+resource "aws_cloudwatch_event_rule" "glue_completion" {
+  name        = "glue-job-completion"
+  description = "Capture Glue job completion"
+
+  event_pattern = jsonencode({
+    source      = ["aws.glue"]
+    detail-type = ["Glue Job State Change"]
+    detail = {
+      jobName = [aws_glue_job.process_logs.name]
+      state   = ["SUCCEEDED"]
+    }
+  })
+}
+
+# EventBridge target
+resource "aws_cloudwatch_event_target" "crawler_lambda" {
+  rule      = aws_cloudwatch_event_rule.glue_completion.name
+  target_id = "StartCrawlerLambda"
+  arn       = aws_lambda_function.start_crawler.arn
+}
+
+# IAM role for crawler Lambda
+resource "aws_iam_role" "crawler_lambda_role" {
+  name = "start_crawler_lambda_role_${var.environment}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
+}
+
+# Lambda policy for crawler
+resource "aws_iam_role_policy" "crawler_lambda_glue" {
+  name = "crawler_lambda_glue_${var.environment}"
+  role = aws_iam_role.crawler_lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = ["glue:StartCrawler"]
+      Resource = [aws_glue_crawler.connection_logs.arn]
+    }]
+  })
+}
