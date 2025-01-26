@@ -17,6 +17,11 @@ resource "aws_s3_object" "folders" {
   bucket       = aws_s3_bucket.legal_files.id
   key          = each.key
   content_type = "application/x-directory"
+
+  depends_on = [
+    aws_s3_bucket.legal_files,
+    aws_s3_bucket_versioning.legal_files
+  ]
 }
 
 # S3 trigger for Lambda
