@@ -253,3 +253,29 @@ resource "aws_iam_role_policy" "crawler_lambda_glue" {
     }]
   })
 }
+
+resource "aws_iam_role_policy" "crawler_lambda_logging" {
+  name = "crawler_lambda_logging_${var.environment}"
+  role = aws_iam_role.crawler_lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ]
+      Resource = ["arn:aws:logs:*:*:*"]
+    }]
+  })
+}
+
+resource "aws_lambda_permission" "allow_eventbridge" {
+  statement_id  = "AllowEventBridgeInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.start_crawler.arn
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.glue_completion.arn
+}
