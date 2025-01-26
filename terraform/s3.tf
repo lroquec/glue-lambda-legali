@@ -16,7 +16,12 @@ resource "aws_s3_object" "folders" {
   for_each = toset(["compressed/", "raw/", "parquet/", "athena-results/", "scripts/", "temporary/"])
   bucket   = aws_s3_bucket.legal_files.id
   key      = each.key
-  source   = "/dev/null"
+  content = ""
+  force_destroy = true
+
+  lifecycle {
+    ignore_changes = [tags]
+  }
 
   depends_on = [
     aws_s3_bucket.legal_files,
