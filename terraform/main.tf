@@ -194,7 +194,7 @@ resource "aws_lambda_function" "start_crawler" {
   source_code_hash = data.archive_file.crawler_lambda_zip.output_base64sha256
   function_name    = "start_crawler_${var.environment}"
   role             = aws_iam_role.crawler_lambda_role.arn
-  handler          = "index.handler"
+  handler          = "start_crawler.handler"
   runtime          = "python3.10"
   timeout          = 30
 
